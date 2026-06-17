@@ -1,64 +1,43 @@
 ---
-- name: Provisionamento da VM para o Projeto IFPB
+- name: Provisionamento Docker Wordpress
   hosts: all
   become: true
 
   tasks:
-    - name: Atualizar o cache do apt e fazer upgrade do sistema
+
+    - name: Atualizar cache do apt
       apt:
         update_cache: yes
+
+    - name: Atualizar sistema
+      apt:
         upgrade: dist
-        cache_valid_time: 3600
 
-    - name: Instalar pacotes necessários para o Docker
+    - name: Instalar Docker
       apt:
         name:
-          - apt-transport-https
-          - ca-certificates
-          - curl
-          - gnupg
-          - lsb-release
-        state: present
-
-    - name: Adicionar chave GPG oficial do Docker
-      apt_key:
-        url: https://download.docker.com/linux/debian/gpg
-        state: present
-
-    - name: Adicionar repositório oficial do Docker
-      apt_repository:
-        repo: "deb [arch=amd64] https://download.docker.com/linux/debian {{ ansible_facts['distribution_release'] }} stable"
-        state: present
-
-    - name: Instalar Docker e Docker Compose Plugin (v5/Atual)
-      apt:
-        name:
-          - docker-ce
-          - docker-ce-cli
-          - containerd.io
-          - docker-compose-plugin
-        state: present
+          - docker.io
+          - docker-compose
         update_cache: yes
+        state: present
 
-    - name: Garantir que o serviço do Docker está rodando
+    - name: Habilitar Docker
       service:
         name: docker
         state: started
         enabled: yes
 
-    - name: Criar diretório para a aplicação
+    - name: Criar diretorio da aplicacao
       file:
-        path: /opt/wordpress-app
+        path: /opt/wordpress
         state: directory
-        mode: '0755'
 
-    - name: Copiar o arquivo docker-compose.yml para a VM
+    - name: Copiar docker-compose
       copy:
         src: docker-compose.yml
-        dest: /opt/wordpress-app/docker-compose.yml
-        mode: '0644'
+        dest: /opt/wordpress/docker-compose.yml
 
-    - name: Executar o Docker-compose para subir os containers
-      command: docker compose up -d
+    - name: Executar Docker Compose
+      command: docker-compose up -d
       args:
-        chdir: /opt/wordpress-app
+        chdir: /opt/wordpress
