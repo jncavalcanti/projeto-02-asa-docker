@@ -58,6 +58,24 @@ Se quiser remover completamente a máquina virtual e os recursos criados, execut
 vagrant destroy -f
 ```
 
+### Verificando o funcionamento
+
+Após a inicialização do ambiente, você pode validar rapidamente se tudo está funcionando corretamente com os comandos abaixo:
+
+```bash
+vagrant ssh
+```
+
+```bash
+docker ps
+```
+
+```bash
+curl -I http://192.168.56.149:8080
+```
+
+Esses comandos ajudam a confirmar que a máquina virtual está acessível, que os containers do WordPress, MySQL e Nginx estão ativos e que o proxy Nginx responde na porta configurada.
+
 ## Autores
 
 - Jessé Alves
