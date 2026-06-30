@@ -1,5 +1,7 @@
+# Define os serviços que compõem a pilha da aplicação WordPress.
 services:
 
+  # Serviço configurado para expor a porta 8080 do host e encaminhar o tráfego para a aplicação principal.
   webproxy:
     image: jaocalheiros/nginx-custom:latest
     container_name: webproxy
@@ -13,6 +15,7 @@ services:
     depends_on:
       - webserver
 
+  # Servidor WordPress que usa o MySQL como backend e mantém os arquivos da aplicação em um volume persistente.
   webserver:
     image: wordpress:latest
     container_name: webserver
@@ -32,6 +35,7 @@ services:
     depends_on:
       - database
 
+  # Banco de dados MySQL que armazena o conteúdo do WordPress com credenciais definidas para o ambiente.
   database:
     image: mysql:latest
     container_name: database
@@ -48,9 +52,11 @@ services:
     networks:
       - wordpress
 
+# Define volumes nomeados para preservar os dados do WordPress e do banco entre reinicializações.
 volumes:
   app:
   my:
 
+# Cria uma rede interna isolada para permitir a comunicação entre os containers da stack.
 networks:
   wordpress:

@@ -1,13 +1,17 @@
 ---
+# Define o nome do provisionamento e o alvo da execução na VM.
 - name: Provisionamento Docker Wordpress
   hosts: all
   become: true
 
+  # Etapas que preparam o sistema com Docker, o repositório oficial e a aplicação.
   tasks:
+    # Atualiza o cache do APT para garantir que os pacotes mais recentes estejam disponíveis.
     - name: Atualizar cache do apt
       apt:
         update_cache: yes
 
+    # Instala os pacotes mínimos necessários para adicionar repositórios HTTPS confiáveis.
     - name: Instalar dependencias previas do Docker
       apt:
         name:
@@ -17,24 +21,28 @@
           - gnupg
         state: present
 
+    # Cria o diretório padrão onde o APT armazena chaves assinadas do sistema.
     - name: Criar diretorio para chaves do apt
       file:
         path: /etc/apt/keyrings
         state: directory
         mode: '0755'
 
+    # Baixa a chave GPG oficial do Docker para validar a autenticidade dos pacotes.
     - name: Adicionar chave GPG oficial do Docker
       get_url:
         url: https://download.docker.com/linux/debian/gpg
         dest: /etc/apt/keyrings/docker.asc
         mode: '0644'
 
+    # Adiciona o repositório estável do Docker para Debian Bookworm.
     - name: Adicionar repositorio oficial do Docker (Debian Bookworm)
       apt_repository:
         repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian bookworm stable"
         state: present
         filename: docker
 
+    # Instala o Engine do Docker e o plugin do Compose para gerenciar os containers.
     - name: Instalar Docker CE e Docker Compose Plugin
       apt:
         name:
@@ -45,27 +53,32 @@
         update_cache: yes
         state: present
 
+    # Inicia e habilita o serviço Docker para o boot do sistema.
     - name: Habilitar Docker
       service:
         name: docker
         state: started
         enabled: yes
 
+    # Cria o diretório onde o Compose vai operar a aplicação WordPress.
     - name: Criar diretorio da aplicacao
       file:
         path: /opt/wordpress
         state: directory
 
+    # Copia o arquivo de orquestração para o servidor para que o Compose possa subir os serviços.
     - name: Copiar docker-compose
       copy:
         src: docker-compose.yml
         dest: /opt/wordpress/docker-compose.yml
 
+    # Sobe os containers em segundo plano usando o arquivo do Compose já copiado.
     - name: Executar Docker Compose
       command: docker compose up -d
       args:
         chdir: /opt/wordpress
 
+    # Acrescenta o usuário vagrant ao grupo docker para evitar o uso recorrente de sudo.
     - name: Adicionar usuario vagrant ao grupo docker
       user:
         name: vagrant
